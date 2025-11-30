@@ -11,9 +11,13 @@ from app.core.database import Base, engine
 from app.middleware.rate_limit import limiter
 import os
 
-# Only create tables in non-serverless environments
-if not os.getenv("VERCEL"):
-    Base.metadata.create_all(bind=engine)
+# Create tables - handle both serverless and non-serverless
+try:
+    # Try to create tables (will fail gracefully if already exist)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
+except Exception as e:
+    # Log error but don't fail the app startup
+    print(f"Database initialization note: {e}")
 
 app = FastAPI(title="FastAPI", version="1.0")
 app.state.limiter = limiter

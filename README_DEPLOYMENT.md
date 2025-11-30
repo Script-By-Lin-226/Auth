@@ -6,15 +6,28 @@
 
 ## Environment Variables
 
-Set these in your Vercel project settings:
+### Required Variables
+
+**SECRET_KEY** (Required)
+- Generate a secure random string (minimum 32 characters)
+- Used for session management and JWT signing
+- Generate with: `python -c "import secrets; print(secrets.token_urlsafe(32))"`
+
+**DATABASE_URL** (Required)
+- PostgreSQL connection string for production
+- Format: `postgresql://username:password@host:port/database_name`
+- See [ENV_VARIABLES.md](./ENV_VARIABLES.md) for database setup options
+
+### Optional Variables (with defaults)
 
 ```
-SECRET_KEY=your-secret-key-here (use a strong random string)
-DATABASE_URL=your-database-url (for production, use PostgreSQL or similar)
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=60
-REFRESH_TOKEN_EXPIRE_DAYS=7
+ALGORITHM=HS256                          # JWT algorithm (default: HS256)
+ACCESS_TOKEN_EXPIRE_MINUTES=60            # Token expiration (default: 60)
+REFRESH_TOKEN_EXPIRE_DAYS=7               # Refresh token expiration (default: 7)
+ALLOWED_ORIGINS=https://your-app.vercel.app  # CORS origins (default: *)
 ```
+
+**📖 For detailed environment variable guide, see [ENV_VARIABLES.md](./ENV_VARIABLES.md)**
 
 ## Deployment Steps
 
