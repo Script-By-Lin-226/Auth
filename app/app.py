@@ -12,24 +12,31 @@ from app.middleware.rate_limit import limiter
 import os
 
 # Import models to register them with Base before creating tables
-from app.models.user import User
-from app.models.post import Post
+try:
+    from app.models.user import User
+    from app.models.post import Post
+except Exception as e:
+    print(f"Warning: Could not import models: {e}")
 
 # Create tables - handle both serverless and non-serverless
 # This is done lazily - won't fail app startup if DB is unavailable
 def init_database():
     try:
+        if engine is None:
+            print("Database engine not configured - skipping table creation")
+            return
         Base.metadata.create_all(bind=engine, checkfirst=True)
+        print("Database tables initialized successfully")
     except Exception as e:
         # Log error but don't fail the app startup
         # Database will be initialized on first request
-        import logging
-        logging.warning(f"Database initialization deferred: {e}")
+        print(f"Database initialization deferred (will retry on first request): {e}")
 
 # Try to initialize, but don't block app startup
 try:
     init_database()
-except Exception:
+except Exception as e:
+    print(f"Database initialization skipped: {e}")
     pass  # Will be retried on first database request
 
 app = FastAPI(title="FastAPI", version="1.0")
@@ -96,4 +103,28 @@ async def admin_panel_page():
     return {"message": "Admin panel page"}
 
 app.include_router(auth.router)
+
+# Health check endpoint for debugging
+@app.get("/health")
+async def health_check():
+    """Health check endpoint to verify app is running"""
+    try:
+        from app.core.database import engine
+        if engine is None:
+            db_status = "not configured"
+        else:
+            # Try a simple database connection test
+            from sqlalchemy import text
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            db_status = "connected"
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+    
+    return {
+        "status": "ok",
+        "database": db_status,
+        "environment": os.getenv("VERCEL", "local"),
+        "database_url_set": bool(os.getenv("DATABASE_URL"))
+    }
 

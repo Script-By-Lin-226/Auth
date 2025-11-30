@@ -9,6 +9,11 @@ from app.models.user import User
 
 # DB DEPENDENCY
 def get_db():
+    if SessionLocal is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Database not configured. Please check DATABASE_URL environment variable."
+        )
     db = SessionLocal()
     try:
         yield db
