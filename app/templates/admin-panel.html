@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Social Platform</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/feed-page" class="nav-logo">Social Platform</a>
+            <div class="nav-actions">
+                <a href="/feed-page" class="nav-link">Feed</a>
+                <button id="logoutBtn" class="btn btn-secondary btn-sm">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="admin-container">
+            <aside class="admin-sidebar">
+                <ul class="admin-menu">
+                    <li class="admin-menu-item">
+                        <a href="#users" class="admin-menu-link active" data-section="users">Users</a>
+                    </li>
+                    <li class="admin-menu-item">
+                        <a href="#update" class="admin-menu-link" data-section="update">Update User</a>
+                    </li>
+                </ul>
+            </aside>
+
+            <main class="admin-content">
+                <!-- Users Section -->
+                <div id="usersSection" class="admin-section">
+                    <div class="admin-header">
+                        <div>
+                            <h1 class="card-title">User Management</h1>
+                            <p class="card-subtitle">View and manage all users</p>
+                        </div>
+                        <button id="refreshUsersBtn" class="btn btn-secondary">Refresh</button>
+                    </div>
+
+                    <div id="usersStats" class="stats-grid"></div>
+
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem;">
+                                        <div class="loading-spinner"></div>
+                                        <p style="margin-top: 1rem;">Loading users...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Update User Section -->
+                <div id="updateSection" class="admin-section" style="display: none;">
+                    <div class="admin-header">
+                        <div>
+                            <h1 class="card-title">Update User</h1>
+                            <p class="card-subtitle">Modify user information</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <form id="updateUserForm">
+                            <div class="form-group">
+                                <label for="searchUsername" class="form-label">Search Username</label>
+                                <div class="btn-group" style="margin-bottom: 1rem;">
+                                    <input type="text" id="searchUsername" class="form-input" placeholder="Enter username to search" style="flex: 1;">
+                                    <button type="button" id="searchUserBtn" class="btn btn-primary">Search</button>
+                                </div>
+                            </div>
+
+                            <div id="userInfoCard" style="display: none;">
+                                <div class="card" style="background: var(--bg-secondary); margin-bottom: 1.5rem;">
+                                    <h3 style="margin-bottom: 1rem;">Current User Information</h3>
+                                    <div id="currentUserInfo"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="updateUsername" class="form-label">Username</label>
+                                    <input type="text" id="updateUsername" class="form-input" placeholder="New username">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="updateEmail" class="form-label">Email</label>
+                                    <input type="email" id="updateEmail" class="form-input" placeholder="New email">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="updatePassword" class="form-label">Password</label>
+                                    <input type="password" id="updatePassword" class="form-input" placeholder="New password (leave empty to keep current)">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="updateRole" class="form-label">Role</label>
+                                    <select id="updateRole" class="form-select">
+                                        <option value="">Select role</option>
+                                        <option value="user">User</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-primary">Update User</button>
+                                    <button type="button" id="clearFormBtn" class="btn btn-secondary">Clear</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
+
