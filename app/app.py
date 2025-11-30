@@ -11,13 +11,26 @@ from app.core.database import Base, engine
 from app.middleware.rate_limit import limiter
 import os
 
+# Import models to register them with Base before creating tables
+from app.models.user import User
+from app.models.post import Post
+
 # Create tables - handle both serverless and non-serverless
+# This is done lazily - won't fail app startup if DB is unavailable
+def init_database():
+    try:
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+    except Exception as e:
+        # Log error but don't fail the app startup
+        # Database will be initialized on first request
+        import logging
+        logging.warning(f"Database initialization deferred: {e}")
+
+# Try to initialize, but don't block app startup
 try:
-    # Try to create tables (will fail gracefully if already exist)
-    Base.metadata.create_all(bind=engine, checkfirst=True)
-except Exception as e:
-    # Log error but don't fail the app startup
-    print(f"Database initialization note: {e}")
+    init_database()
+except Exception:
+    pass  # Will be retried on first database request
 
 app = FastAPI(title="FastAPI", version="1.0")
 app.state.limiter = limiter

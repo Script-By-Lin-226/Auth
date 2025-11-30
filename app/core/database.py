@@ -18,11 +18,17 @@ if is_postgres:
         separator = '&' if '?' in DATABASE_URL else '?'
         DATABASE_URL = f"{DATABASE_URL}{separator}sslmode=require"
     
+    # For serverless, use connection pooling with smaller pool size
     engine = create_engine(
         DATABASE_URL,
         pool_pre_ping=True,  # Verify connections before using
         pool_recycle=300,    # Recycle connections after 5 minutes
-        echo=False
+        pool_size=1,         # Small pool for serverless
+        max_overflow=0,      # No overflow for serverless
+        echo=False,
+        connect_args={
+            "connect_timeout": 10,  # 10 second timeout
+        }
     )
 else:
     # SQLite configuration (for local development)
