@@ -108,23 +108,44 @@ app.include_router(auth.router)
 @app.get("/health")
 async def health_check():
     """Health check endpoint to verify app is running"""
+    db_status = "unknown"
+    db_error = None
+    env_vars = {}
+    
     try:
-        from app.core.database import engine
+        # Check environment variables
+        env_vars = {
+            "DATABASE_URL_set": bool(os.getenv("DATABASE_URL")),
+            "SECRET_KEY_set": bool(os.getenv("SECRET_KEY")),
+            "VERCEL": os.getenv("VERCEL", "not set")
+        }
+        
+        # Check database connection
+        from app.core.database import engine, DATABASE_URL
         if engine is None:
-            db_status = "not configured"
+            db_status = "engine_not_created"
+            db_error = "Database engine is None - check DATABASE_URL format"
         else:
             # Try a simple database connection test
             from sqlalchemy import text
             with engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
+                result = conn.execute(text("SELECT 1"))
+                result.fetchone()
             db_status = "connected"
     except Exception as e:
-        db_status = f"error: {str(e)}"
+        db_status = "error"
+        db_error = str(e)
+        import traceback
+        db_error += f"\n{traceback.format_exc()}"
     
     return {
         "status": "ok",
-        "database": db_status,
-        "environment": os.getenv("VERCEL", "local"),
-        "database_url_set": bool(os.getenv("DATABASE_URL"))
+        "app_running": True,
+        "database": {
+            "status": db_status,
+            "error": db_error,
+            "url_preview": os.getenv("DATABASE_URL", "")[:50] + "..." if os.getenv("DATABASE_URL") else "not set"
+        },
+        "environment": env_vars
     }
 
