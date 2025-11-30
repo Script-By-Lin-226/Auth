@@ -23,6 +23,25 @@ try:
             separator = '&' if '?' in DATABASE_URL else '?'
             DATABASE_URL = f"{DATABASE_URL}{separator}sslmode=require"
         
+        # Try to use psycopg (v3) first - pure Python, works better on Vercel
+        # Convert postgresql:// to postgresql+psycopg:// for psycopg v3
+        try:
+            import psycopg  # noqa: F401
+            # Use psycopg v3 (pure Python, works better on Vercel)
+            if DATABASE_URL.startswith('postgresql://'):
+                DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+            elif DATABASE_URL.startswith('postgres://'):
+                DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql+psycopg://', 1)
+            print("✅ Using psycopg v3 driver (pure Python)")
+        except ImportError:
+            # Fallback to psycopg2 if psycopg v3 not available
+            try:
+                import psycopg2  # noqa: F401
+                print("✅ Using psycopg2 driver")
+            except ImportError:
+                print("⚠️ Warning: Neither psycopg nor psycopg2 found. Database may not work.")
+                raise ImportError("No PostgreSQL driver found. Install psycopg[binary] or psycopg2-binary")
+        
         # For serverless, use connection pooling with smaller pool size
         engine = create_engine(
             DATABASE_URL,
@@ -33,7 +52,7 @@ try:
             echo=False,
             connect_args={
                 "connect_timeout": 10,  # 10 second timeout
-            }
+            } if 'psycopg' in DATABASE_URL else {}
         )
     else:
         # SQLite configuration (for local development)
